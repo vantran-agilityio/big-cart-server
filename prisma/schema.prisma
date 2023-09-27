@@ -1,0 +1,164 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int             @id @default(autoincrement())
+  email          String          @unique
+  name           String          @db.VarChar(50)
+  password       String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  status         UserStatus
+  userSetting    UserSetting?
+  userOTP        UserOTP?
+  phone          Phone?
+  image          Image?
+  reviews        Review[]
+  favoriteItems  FavoriteItem[]
+  paymentMethods PaymentMethod[]
+  address        Address[]
+  CartItem       CartItem[]
+}
+
+model Address {
+  id            Int      @id @default(autoincrement())
+  recipientName String
+  address       String
+  city          String
+  zipCode       Int
+  country       String
+  default       Boolean
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  phone         Phone?
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model UserOTP {
+  id        Int      @id @default(autoincrement())
+  otp       String
+  createdAt DateTime @default(now())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model UserSetting {
+  id                        Int     @id @default(autoincrement())
+  userId                    Int     @unique
+  enableEmailNotification   Boolean
+  enableOrderNotification   Boolean
+  enableGeneralNotification Boolean
+  user                      User    @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  image     Image?
+  products  Product[]
+}
+
+model Product {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  description   String
+  price         Float
+  quantityStock Int
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  images        Image[]
+  categoryId    Int
+  category      Category       @relation(fields: [categoryId], references: [id])
+  productUnitId Int
+  productUnit   ProductUnit    @relation(fields: [productUnitId], references: [id])
+  reviews       Review[]
+  favoriteItems FavoriteItem[]
+  CartItem      CartItem[]
+}
+
+model ProductUnit {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  rating      Float
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Image {
+  id         Int       @id @default(autoincrement())
+  url        String
+  userId     Int?      @unique
+  user       User?     @relation(fields: [userId], references: [id])
+  categoryId Int?      @unique
+  category   Category? @relation(fields: [categoryId], references: [id])
+  productId  Int?
+  product    Product?  @relation(fields: [productId], references: [id])
+}
+
+model FavoriteItem {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+}
+
+model PaymentMethod {
+  id     Int         @id @default(autoincrement())
+  type   PaymentType
+  userId Int
+  user   User        @relation(fields: [userId], references: [id])
+}
+
+model Phone {
+  id        Int      @id @default(autoincrement())
+  phone     String
+  userId    Int?     @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  addressId Int?     @unique
+  address   Address? @relation(fields: [addressId], references: [id])
+}
+
+enum UserStatus {
+  PRE_ACTIVE
+  ACTIVE
+  SUSPENDED
+}
+
+enum PaymentType {
+  PAYPAL
+  CREDIT_CARD
+  APPLE_PAY
+}

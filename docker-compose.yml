@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # dev-api:
+  #   container_name: dev_api
+  #   build:
+  #     context: .
+  #     target: dev
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 3000:3000
+  #   command: npm run start:debug
+  #   networks:
+  #     - dev-network
+  #   volumes:
+  #     - ./:/usr/src/app
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - dev-db
+  #   links:
+  #     - dev-db
+  #   env_file: .env
+
+  vinmart-dev-db:
+    container_name: vinmart_dev_db
+    image: postgres:15
+    ports:
+      - 5434:5432
+    environment:
+      - POSTGRES_USER=vinmart
+      - POSTGRES_PASSWORD=vinmartsecret
+      - POSTGRES_DB=vinmart
+      - PG_DATA=/var/lib/postgresql/data
+    networks:
+      - vinmart-network
+    volumes:
+      - postgres:/var/lib/postgrseql/data
+
+networks:
+  vinmart-network:
+
+volumes:
+  postgres:
+    name: vinmart-dev-db
